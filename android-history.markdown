@@ -1,0 +1,24 @@
+---
+layout: page
+title: History of Android
+permalink: /android-history/
+---
+
+# History of Android
+
+Android was founded by Andy Rubin in 2003. The company was acquired by Google in 2005. The first Android powered handset, the HTC Dream, was launched in September 2008.
+Android versions have traditionally been named after deserts. For instance,
+
+* Donut - Android 1.6
+* Eclair - Android 2.1
+* Froyo - Android 2.2
+* Gingerbread - Android 2.3
+* Honeycomb - Android 3.0
+* Ice Cream Sandwich - Android 4.0
+* Jelly Bean - Android 4.1
+* KitKat - Android 4.4
+* Lollipop - Android 5.0
+* Marshmallow - Android 6.0
+* Nougat - Android 7.0
+* Oreo - Android 8.0
+* Pie - Android 9.0

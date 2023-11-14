@@ -1,0 +1,618 @@
+# Navigation
+
+In this section we are going to learn how to implement navigation in an Android app. We will create a simple app with a bottom navigation bar. 
+
+
+We start by choosing the "Bottom Navigation Activity" from the "Select a Project Template" screen. This will create scaffolding for our bottom navigation app that we can build on.
+
+You will notice two important things once the template is created. You will notice the _navigation graph_ and the navigation code in _MainActivity.java_ file.
+
+![Bottom Navigation Activity](images/bottom_nav_activity.png)
+
+## Navigation Graph
+
+The main driver for navigating through your app is the _navigation graph_. The navigation graph describes destinations in your app and actions between them. It is an xml file located in the navigation directory.
+
+## Navigating between destinations
+
+When you navigate to the _MainActivity.java_ file, you will notice the following snippet. This is how you programmatically create navigation in your app.
+
+
+~~~
+//start snippet
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+                .build();
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        NavigationUI.setupWithNavController(navView, navController);
+        //end snippet
+~~~
+
+
+Specifically, the `AppBarConfiguration` class handles the configurations and behavior of your AppBar.
+
+The `NavController` manages the navigation between the different destinations on your app.
+
+The `NavigationUI` wires all the navigation UI components together.
+
+
+Let us now proceed with creating our Navigation application.
+
+## Create your MainActivity.java file
+
+Paste the following code in your `MainActivity.java` file.
+
+## Create your ui files
+
+We are now going to create the files that are related to our user interface. Specifically we will be editing the following files;
+
+* `HomeFragment.java`
+* `HomeViewModel.java`
+* `RecyclerViewAdapter.java`
+* `SimpleViewModel.java`
+* `ViewHolder.java`
+* `InfoFragment.java`
+* `InfoViewModel.java`
+
+
+Paste the following code into `HomeFragment.java`
+
+
+~~~
+package com.thebook.bottomnav.ui.home;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.thebook.bottomnav.R;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+
+public class HomeFragment extends Fragment implements RecyclerViewAdapter.ItemClickListener{
+
+    private HomeViewModel homeViewModel;
+    private ImageView imageView;
+    private  RecyclerView recyclerView;
+    private RecyclerView recyclerViewDrama;
+    private RecyclerViewAdapter adapter;
+    private RecyclerViewAdapter adapterDrama;
+    private HomeFragment home;
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
+
+        ArrayList<SimpleViewModel> movieList = new ArrayList<>();
+
+        homeViewModel =
+                ViewModelProviders.of(this).get(HomeViewModel.class);
+        final View root = inflater.inflate(R.layout.fragment_home, container, false);
+        final TextView textView = root.findViewById(R.id.text_home);
+        home = this;
+
+        homeViewModel.getArrayList().observe(getViewLifecycleOwner(), new Observer<ArrayList<SimpleViewModel>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<SimpleViewModel> movieList) {
+                // data to populate the RecyclerView with
+                //TODO: consider moving this into the viewmodel, https://askandroidquestions.com/2021/06/15/how-to-load-data-into-a-recyclerview-inside-a-fragment-using-viewmodel/
+                //TODO: https://gist.githubusercontent.com/sheharyarn/20f171e900eff32bf38fd8be1d30911d/raw/fdb1bea258fdb11875c80ebc3b3e8d3e0311bbfa/RVFragment.java
+                //TODO: add additional recyclerviews
+
+                Context context = getContext();
+                recyclerView = root.findViewById(R.id.fav_recyclerview);
+                recyclerView.setHasFixedSize(true);
+                recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                adapter = new RecyclerViewAdapter(context, movieList);
+                adapter.setClickListener(home);
+                recyclerView.setAdapter(adapter);
+
+                recyclerView = root.findViewById(R.id.drama_recyclerview);
+                recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                adapter = new RecyclerViewAdapter(context, movieList);
+                adapter.setClickListener(home);
+                recyclerView.setAdapter(adapter);
+                recyclerView.scrollToPosition(2);
+
+                recyclerView = root.findViewById(R.id.comedy_recyclerview);
+                recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                adapter = new RecyclerViewAdapter(context, movieList);
+                adapter.setClickListener(home);
+                recyclerView.setAdapter(adapter);
+                recyclerView.scrollToPosition(3);
+            }
+        });
+        //TODO: End of viewModel
+
+        //add onClickListener to scrolling images
+        /*
+        for (int i=4; i<16; i++){
+            int id = getResources().getIdentifier("imageView" + i,"id", getActivity().getPackageName());
+            ImageView imgView = root.findViewById(id);
+            //imgView.setOnClickListener(this);
+        }
+        */
+        return root;
+    }
+
+    //@Override
+    public void onClick(View view) {
+        //todo: pass on movie data for movie selected to the Info Fragment
+        String resourceName;
+        Bundle bundle = new Bundle();
+
+        resourceName = view.getResources().getResourceName(view.getId()).split("/")[1];
+        bundle.putString("id", resourceName);
+        Navigation.findNavController(view).navigate(R.id.action_navigation_home_to_navigation_info, bundle);
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        Bundle bundle = new Bundle();
+        SimpleViewModel item = adapter.getItem(position);
+        int image = item.getImage();
+        String poster = item.getPoster();
+        String title = item.getTitle();
+
+        bundle.putInt("image", image);
+        bundle.putString("poster", poster);
+        bundle.putString("title", title);
+
+        //Toast.makeText(getContext(), "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "You clicked  on position number " + position, Toast.LENGTH_SHORT).show();
+        Navigation.findNavController(view).navigate(R.id.action_navigation_home_to_navigation_info, bundle);
+    }
+}
+
+~~~
+
+
+Paste the following code into `HomeViewModel.java`
+
+
+~~~
+package com.thebook.bottomnav.ui.home;
+
+import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Map;
+
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
+//You need to extend AndroidViewModel
+public class HomeViewModel extends AndroidViewModel {
+
+    private MutableLiveData<String> mText;
+    private MutableLiveData<ArrayList<SimpleViewModel>> movieLiveData;
+    private ArrayList<SimpleViewModel> movieList;
+    private static final String PREFS_NAME = "movie";
+
+    public HomeViewModel(Application application) {
+        super(application);
+        movieLiveData = new MutableLiveData<>();
+        movieList = new ArrayList<>();
+        mText = new MutableLiveData<>();
+        mText.setValue("This is home fragment");
+
+        SharedPreferences prefs = getApplication().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String movieStr = prefs.getString("movie1","");
+
+        try {
+            JSONArray jsonArray = new JSONArray(movieStr);
+            int len = jsonArray.length();
+            //Log.d("len", String.valueOf(len));
+            for (int i=0; i<len; i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                Log.d("bottomnav:json", jsonObject.toString(2));
+                String poster = jsonObject.getString("poster");
+                String title = jsonObject.getString("movie_title");
+                Log.d("bottomnav:movie_title", title);
+                int imgID = getApplication().getResources().getIdentifier(poster,"drawable",getApplication().getPackageName());
+                SimpleViewModel svm = new SimpleViewModel();
+                svm.setTitle(title);
+                svm.setPoster(poster);
+                svm.setImage(imgID);
+                movieList.add(svm);
+                Log.d("bottomnav:id", "" + imgID);
+                Log.d("bottomnav:movielist", movieList.toString());
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        mText.setValue(movieStr);
+        movieLiveData.setValue(movieList);
+
+    }
+
+    public LiveData<ArrayList<SimpleViewModel>> getArrayList() {
+        return movieLiveData;
+    }
+}
+~~~
+
+
+Paste the following code into `RecyclerViewAdapter.java`
+
+
+~~~
+package com.thebook.bottomnav.ui.home;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.thebook.bottomnav.R;
+
+import java.util.ArrayList;
+
+import androidx.recyclerview.widget.RecyclerView;
+
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+
+    private ArrayList<SimpleViewModel> data;
+    private LayoutInflater layoutInflater;
+    private ItemClickListener mClickListener;
+
+    RecyclerViewAdapter(Context context, ArrayList<SimpleViewModel> data) {
+        this.layoutInflater = LayoutInflater.from(context);
+        this.data = data;
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = layoutInflater.inflate(R.layout.recyclerview_item, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        SimpleViewModel movie = data.get(position);
+        holder.myImageView.setImageResource(movie.getImage());
+    }
+
+    @Override
+    public int getItemCount() {
+        return data.size();
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        TextView myTextView;
+        ImageView myImageView;
+
+        ViewHolder(View itemView) {
+            super(itemView);
+            myImageView = itemView.findViewById(R.id.imageView);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+        }
+    }
+
+    SimpleViewModel getItem(int id) {
+        return data.get(id);
+    }
+
+    void setClickListener(ItemClickListener itemClickListener) {
+        this.mClickListener = itemClickListener;
+    }
+
+    public interface ItemClickListener {
+        void onItemClick(View view, int position);
+    }
+}
+~~~
+
+
+Paste the following code into `SimpleViewModel.java`
+
+
+~~~
+package com.thebook.bottomnav.ui.home;
+
+public class SimpleViewModel {
+    private String poster;
+    private String title;
+
+    public int getImage() {
+        return image;
+    }
+
+    public void setImage(int image) {
+        this.image = image;
+    }
+
+    private int image;
+
+    public void setPoster(String poster) {
+        this.poster = poster;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getPoster() {
+        return poster;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+    /*
+    public void ViewModel(String poster, String title){
+            this.poster = poster;
+            this.title = title;
+    }
+    */
+    public void SimpleViewModel(String title, int image){
+        this.image = image;
+        this.title = title;
+    }
+
+}
+
+~~~
+
+
+Paste the following code into `ViewHolder.java`
+
+
+~~~
+package com.thebook.bottomnav.ui.home;
+
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.thebook.bottomnav.R;
+
+import androidx.recyclerview.widget.RecyclerView;
+
+public class ViewHolder extends RecyclerView.ViewHolder{
+
+    TextView myTextView;
+    ImageView myImageView;
+
+    ViewHolder(View itemView) {
+        super(itemView);
+        //myTextView = itemView.findViewById(R.id.tvMovieName);
+        myImageView = itemView.findViewById(R.id.imageView);
+    }
+
+
+}
+
+~~~
+
+
+Paste the following code into `InfoFragment.java`
+
+
+~~~
+package com.thebook.bottomnav.ui.info;
+
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
+
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.thebook.bottomnav.R;
+
+public class InfoFragment extends Fragment {
+
+    private InfoViewModel mViewModel;
+
+    public static InfoFragment newInstance() {
+        return new InfoFragment();
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.info_fragment, container, false);
+        final TextView textView = root.findViewById(R.id.text_info);
+        final ImageView imageView = root.findViewById(R.id.info_image);
+        mViewModel = new ViewModelProvider(this).get(InfoViewModel.class);
+        mViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+                //textView.setText(s);
+            }
+        });
+        String title = getArguments().getString("title");
+        textView.setText(title);
+        imageView.setImageResource(getArguments().getInt("image"));
+
+        Log.d("Bundle", getArguments().getString("poster"));
+        Log.d("Bundle", getArguments().getString("title"));
+        Log.d("Bundle", "" + getArguments().getInt("image"));
+
+        return root;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mViewModel = ViewModelProviders.of(this).get(InfoViewModel.class);
+        // TODO: Use the ViewModel
+    }
+
+
+}
+
+~~~
+
+
+Paste the following code into `InfoViewModel.java`
+
+
+~~~
+package com.thebook.bottomnav.ui.info;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+public class InfoViewModel extends AndroidViewModel {
+    // TODO: Implement the ViewModel
+    private MutableLiveData<String> mText;
+    private static String MY_PREFS_NAME = "filename";
+
+    public InfoViewModel(@NonNull Application application) {
+        super(application);
+        SharedPreferences prefs = getApplication().getSharedPreferences("movie", Context.MODE_PRIVATE);
+
+        mText = new MutableLiveData<>();
+
+        SharedPreferences.Editor preferencesEditor = prefs.edit();
+        preferencesEditor.putString("description", "This is a dash board fragment");
+        //preferencesEditor.putInt("color", mCurrentColor);
+        preferencesEditor.apply();
+
+        String description = prefs.getString("description", "");
+        mText.setValue(description);
+    }
+
+    public LiveData<String> getText() {
+        return mText;
+    }
+}
+
+~~~
+
+
+### Create your assets
+
+1. Create an Assets directory
+- Inside your project, right click on *app* the select New -> Folder -> Assets Folder
+- Click *Finish* on the _Configure Component screen that appears
+
+2. Create an image directory under the assets directory
+- Right click on the *assets* directory the select New -> Directory. Then enter image as the name of the directory
+
+2. Download the image assets your project's drawable directory. The assets for this project can be downloaded from <https://github.com/budu3/the-book/tree/demo_bottom_nav_kotlin/app/src/main/res/drawable>.
+
+#### Create your Layouts
+
+Paste the following code into `info_fragment.xml`
+
+
+~~~
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.info.InfoFragment">
+
+    <ImageView
+        android:id="@+id/info_image"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_home_black_24dp" />
+
+    <TextView
+        android:id="@+id/text_info"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center"
+
+        android:text="Hello" />
+
+</FrameLayout>
+~~~
+
+
+Paste the following code into `recyclerview_item.xml`
+
+
+~~~
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="150dp"
+    android:layout_height="match_parent"
+    android:padding="1dp">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingLeft="1dp"
+        app:srcCompat="@drawable/tt38" />
+</LinearLayout>
+
+~~~
+
+
+#### Create your Navigation Graph
+
+Paste the following code into `mobile_navogation.xml`
+
+#### Run your App
+
+The _Running your Simple App_ chapter will walk you through the steps on how to run this example in Android Studio.
+
+
+## Conclusion
+
+Implementing navigation in your Android app has been simplified in recent releases. It can now be achieved by building a navigation graph and then stringing them all programmatically in your _ActivityMain.java_ file. You can string everything up using the `AppBarConfiguration`, `NavController` and `NavigationUI` classes.

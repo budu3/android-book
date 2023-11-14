@@ -1,0 +1,18 @@
+# Running your App on a Mobile Device
+
+You can also run your app on a mobile device. The following section will show you how to do this.
+
+To run your app on a mobile device,
+
+1. Connect your device to your computer using a USB cord.
+
+2. Enable USB debugging on your mobile device
+	* To enable USB debugging on your mobile device go to "Settings" -\> "About phone" -\> "Build number" and then tap on "Build number" 7 times.
+	* If you are running a later version on Andriod you will get a "Allow USB debugging?" dialog box. Click **OK** to proceed.
+
+3. Click **Run** on the toolbar in Android Studio.
+
+4. Select your device from the _Select Deployment Target_ dialog box.
+	* Your device will appear in the "Connected Devices" section of the dialog box, select it.
+
+I> You might have to find and download the USB drivers for your particular device before these steps to be completed successfully. Search your device's website for this.

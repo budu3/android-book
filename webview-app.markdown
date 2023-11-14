@@ -1,0 +1,124 @@
+---
+layout: page
+title: Creating a Simple WebView App
+permalink: /webview-app/
+---
+
+# Creating a Simple WebView App
+
+## A Simple Web App
+
+In this section we are going to create a web app that opens in our Android app.
+
+### WebView
+
+The Android WebView is a 'browser-like' container that renders HTML. It is a widget that is made up of more or less the same components as your Chrome browser. What that means is that, in most cases, a webpage will look the same in both your Chrome browser and in the WebView.
+
+When you create a WebView based app you put most of your user interface components inside the WebView as oppossed to creating them using native Android components. Since your components appear inside the WebView they will be created using standard Web technologies such as HTML, Javascript and CSS like any webpage. In essences a WebView app is webpage that operates inside of a Android app. Let us proceed with creating your WebView app. 
+
+### Create your index.html file
+
+1. If you do not have an assets directory create one
+
+* Right click/Ctrl click on "app" directory -\> New -\> Folder -\> Assets Folder
+* Click **Finish** on the _Configure Component_ screen
+
+2. Create an index.html file
+
+* Right click/Ctrl click on the "assets" directory -\> New -\> File
+* Enter "index.html" in the New File dialog box
+* Enter the following code in your "index.html" file
+
+~~~
+<html>
+<body>
+	<p>&lang;I am a WebView app!&rang;</p>
+</body>
+</html>
+~~~
+
+### Create your Layout
+
+1. Insert the following code in your activity_main.xml file
+
+
+~~~
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="0dp"
+        android:layout_marginEnd="0dp"
+        android:background="?android:attr/windowBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+
+    <fragment
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toTopOf="@id/nav_view"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navGraph="@navigation/mobile_navigation" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+~~~
+
+
+### Create your ActivityMain.java file
+
+1. Insert the following code in your MainActivity.java file
+
+
+~~~
+package com.thebook.bottomnav;
+
+import android.os.Bundle;
+import android.webkit.WebView;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+
+public class MainActivity extends AppCompatActivity {
+
+    private WebView webView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        webView = (WebView) findViewById(R.id.WebView1);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadUrl("file:///android_asset/index.html");
+    }
+}
+
+~~~
+
+
+### Run your App
+
+The _Running your Simple App_ chapter will walk you through the steps on how to run this example in Android Studio.
+
+## Summary
+
+In this section we learnt about the WebView and about it being a web browser inside of an Android app. We then used it to create a very simple app.
